@@ -38,34 +38,6 @@ Theta2_grad = zeros(size(Theta2));
 %         variable J. After implementing Part 1, you can verify that your
 %         cost function computation is correct by verifying the cost
 %         computed in ex4.m
-
-for i = 1:m
-    %initialize vector y(i) for training set (x(i),y(i))
-    y_bin = zeros(10,1)
-    
-    % place a 1 in y_bin at the index of y(i)
-    y_bin(y(i))=1
-    
-    %add a 1 to the ith line of X which represents x(i)
-    a1 = [ones(1,1) X(i,:)](:) %401*1 ok
-    
-    % caculate the hidden layer nodes for x(i)
-    a2 = sigmoid(Theta1*a1) %25*1 ok
-    
-    %add a node 1 to the hidden layer 
-    a2 = [1; a2] %26*1
-    
-    % calculate output layer 
-    h = sigmoid(Theta2*a2) %10*1 ok 
-    
-    % sum the cost for the training example (x(i),y(i))
-    J = J - (y_bin'*log(h)+(1-y_bin)'*log(1-h)) % sum to add all 5000 results
-
-end;
-    
-J=J/m
-%size(J);
-%
 % Part 2: Implement the backpropagation algorithm to compute the gradients
 %         Theta1_grad and Theta2_grad. You should return the partial derivatives of
 %         the cost function with respect to Theta1 and Theta2 in Theta1_grad and
@@ -89,6 +61,47 @@ J=J/m
 %               and Theta2_grad from Part 2.
 %
 
+for i = 1:m
+    
+    %Implement Feed Forward
+    %add a 1 to the ith line of X which represents x(i)
+    a1 = [1 X(i,:)](:) %401*1 ok
+    % caculate the hidden layer nodes for x(i)
+    z2 = Theta1*a1
+    a2 = [1;sigmoid(z2)] %25*1 ok
+    %add a node 1 to the hidden layer 
+    % calculate output layer 
+    z3 = Theta2*[a2]
+    h = sigmoid(z3) %10*1 ok 
+    
+    %initialize vector y(i) for training set (x(i),y(i))
+    y_bin = zeros(size(h,1),1)
+    y_bin(y(i))=1
+    
+    %Calculate cost Function
+    J = J - ((y_bin'*log(h))+((1-y_bin)'*log(1-h))) 
+    
+    %Calculate delta
+    delta3 = h-y_bin % 10*1
+    delta2 = Theta2'*delta3.*sigmoidGradient([1;z2])
+    delta2 = delta2(2:end) %25*1
+    
+    %calculate Delta
+    Delta2 = 0
+    Delta1 = 0
+    Delta2 = Delta2 + delta3*a2'
+    Delta1 = Delta1 + delta2*a1'
+    
+    DELTA1 = Delta1/m
+    size(DELTA1)
+    DELTA2 = Delta2/m
+    size(DELTA2)
+    
+    Theta1_grad = Theta1_grad + DELTA1
+    Theta2_grad = Theta2_grad + DELTA2
+end;
+    
+J=J/m +(lambda/(2*m))*(sum(sum((Theta1(:,2:end)).^2)) + sum(sum((Theta2(:,2:end)).^2)))
 
 
 
